@@ -1,0 +1,157 @@
+CIPHER = (("D", "A", "V", "I", "O"),
+          ("Y", "N", "E", "R", "B"),
+          ("C", "F", "G", "H", "K"),
+          ("L", "M", "P", "Q", "S"),
+          ("T", "U", "W", "X", "Z"))
+
+
+
+#Add your code here!
+def encrypt(string):
+    #Setting the string up for encryption
+    string = string.upper()
+    string = string.replace("J", "I")
+    for char in string:
+        if ord(char) < 65 or ord(char) > 90:
+            string = string.replace(char, "")
+    if len(string) % 2 != 0:
+        string += "X"
+    count = 0
+    pairs = []
+    two = []
+    for char in string:
+        if count < 2:
+            two.append(char)
+            count += 1
+        else:
+            pairs.append(two)
+            count = 1
+            two = [char]
+    pairs.append(two)
+    for pair in pairs:
+        if pair[0] == pair[1]:
+            pair[1] = "X"
+    #String is setup for encryption, now encrypting
+    encrypted = ""
+    for pair in pairs:
+        #Finds location in cipher
+        l1 = find_letter(CIPHER, pair[0])
+        l2 = find_letter(CIPHER, pair[1])
+        #If locations are in the same row, sends to row case function and returns
+        #encrypted pair
+        if l1[0] == l2[0]:
+            l1 = row_case(CIPHER, l1)
+            l2 = row_case(CIPHER, l2)
+            pair = l1 + l2
+            encrypted += pair
+        #If locations are in the same column, sends to column case function and returns
+        #encrypted pair
+        elif l1[1] == l2[1]:
+            l1 = column_case(CIPHER, l1)
+            l2 = column_case(CIPHER, l2)
+            pair = l1 + l2
+            encrypted += pair
+        #If column/rows don't match, it must be rectangle case
+        else:
+            new_l1 = rectangle_case(CIPHER, l1, l2)
+            new_l2 = rectangle_case(CIPHER, l2, l1)
+            pair = new_l1 + new_l2
+            encrypted += pair
+    return encrypted
+
+def decrypt(string):
+    #Moving the string into pairs
+    count = 0
+    pairs = []
+    two = []
+    for char in string:
+        if count < 2:
+            two.append(char)
+            count += 1
+        else:
+            pairs.append(two)
+            count = 1
+            two = [char]
+    pairs.append(two)
+    #Pairs are setup, now to undo the encryption
+    decrypted = ""
+    for pair in pairs:
+        #Finds location in cipher
+        l1 = find_letter(CIPHER, pair[0])
+        l2 = find_letter(CIPHER, pair[1])
+        #Undo the encryption for row_case
+        if l1[0] == l2[0]:
+            l1 = row_case_undo(CIPHER, l1)
+            l2 = row_case_undo(CIPHER, l2)
+            pair = l1 + l2
+            decrypted += pair
+        #Undo the encryption for column_case
+        elif l1[1] == l2[1]:
+            l1 = column_case_undo(CIPHER, l1)
+            l2 = column_case_undo(CIPHER, l2)
+            pair = l1 + l2
+            decrypted += pair
+        #Rectangle case still works correctly
+        else:
+            new_l1 = rectangle_case(CIPHER, l1, l2)
+            new_l2 = rectangle_case(CIPHER, l2, l1)
+            pair = new_l1 + new_l2
+            decrypted += pair
+    return decrypted
+
+#Function to find where the letter is in the cypher
+def find_letter(cipher, let):
+    row = 0
+    column = 0
+    for line in cipher:
+        for character in line:
+            if character == let:
+                return [row, column]
+            else:
+                column += 1
+        column = 0
+        row += 1
+        
+def row_case(cipher, location):
+    row, column = location
+    if column == 4:
+        return cipher[row][0]
+    else:
+        return cipher[row][column + 1]
+    
+    
+def column_case(cipher, location):
+    row, column = location
+    if row == 4:
+        return cipher[0][column]
+    else:
+        return cipher[row + 1][column]
+    
+def rectangle_case(cipher, location1, location2):
+    row = location1[0]
+    column = location2[1]
+    return cipher[row][column]
+
+def row_case_undo(cipher, location):
+    row, column = location
+    if column == 0:
+        return cipher[row][4]
+    else:
+        return cipher[row][column - 1]
+    
+    
+def column_case_undo(cipher, location):
+    row, column = location
+    if row == 0:
+        return cipher[4][column]
+    else:
+        return cipher[row - 1][column]
+    
+#Below are some lines of code that will test your function.
+#You can change the value of the variable(s) to test your
+#function with different inputs.
+#
+#If your function works correctly, this will originally
+#print: QLGRQTVZIBTYQZ, then PSHELXOWORLDSX
+print(encrypt("furthermore zebra["))
+print(decrypt("QLGRQTVZIBTYQZ"))
